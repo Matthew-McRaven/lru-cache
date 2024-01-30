@@ -197,11 +197,6 @@ class Cache
   }
 };
 
-namespace Lowercase {
-template <typename... Ts>
-using cache = Cache<Ts...>;
-}  // namespace Lowercase
-
 }  // namespace LRU
 
 #endif  // LRU_CACHE_HPP
