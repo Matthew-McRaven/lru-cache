@@ -27,7 +27,6 @@
 #include <lru/error.hpp>
 #include <lru/iterator-tags.hpp>
 #include <lru/statistics.hpp>
-#include <lru/timed-cache.hpp>
 #include <lru/wrap.hpp>
 
 #endif  // LRU_HPP
