@@ -125,7 +125,9 @@ class BaseOrderedIterator
     // Atomicity
     _throw_if_at_invalid(unordered_iterator);
     _cache = std::move(unordered_iterator._cache);
-    _entry = std::move(unordered_iterator._entry);
+    Optional<Entry> e = unordered_iterator._entry;
+    if(e) _entry.emplace(e->key(), e->value());
+    else _entry.reset();
     _iterator = std::move(unordered_iterator._iterator->second.order);
   }
 
