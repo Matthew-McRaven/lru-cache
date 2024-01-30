@@ -40,18 +40,6 @@ struct KeyNotFound : public std::runtime_error {
   }
 };
 
-/// Exception thrown when the value of an expired key was requested.
-struct KeyExpired : public std::runtime_error {
-  using super = std::runtime_error;
-
-  explicit KeyExpired(const std::string& key)
-  : super("Key found, but expired: " + key) {
-  }
-
-  KeyExpired() : super("Key found, but expired") {
-  }
-};
-
 /// Exception thrown when requesting the front or end key of an empty cache.
 struct EmptyCache : public std::runtime_error {
   using super = std::runtime_error;
