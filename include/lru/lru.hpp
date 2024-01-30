@@ -22,7 +22,6 @@
 #ifndef LRU_HPP
 #define LRU_HPP
 
-#include <lru/cache-tags.hpp>
 #include <lru/cache.hpp>
 #include <lru/error.hpp>
 #include <lru/iterator-tags.hpp>
