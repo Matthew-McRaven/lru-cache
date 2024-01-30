@@ -25,6 +25,8 @@
 
 #include "lru/lru.hpp"
 
+using namespace std::chrono_literals;
+
 int f(int x) {
   std::this_thread::sleep_for(1s);
   return x;
