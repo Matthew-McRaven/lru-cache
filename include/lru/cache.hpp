@@ -373,17 +373,19 @@ class Cache {
   /// \complexity O(1) expected and amortized.
   /// \throws LRU::Error::KeyNotFound if the key's value may not be accessed.
   /// \see contains()
-  virtual Value& lookup(const Key& key) {
-    if (key == _last_accessed) {
-      auto& value = _last_accessed.value();
-      _register_hit(key, value);
-      // If this is the last accessed key, it's at the front anyway
-      return value;
-    }
+  Value &lookup(const Key &key)
+  {
+      if (key == _last_accessed) {
+          auto &value = _last_accessed.value();
+          _register_hit(key, value);
+          // If this is the last accessed key, it's at the front anyway
+          return value;
+      }
 
-    auto iterator = find(key);
-    if (iterator == end()) throw LRU::Error::KeyNotFound();
-    return iterator->second.value;
+      auto iterator = find(key);
+      if (iterator == end())
+          throw LRU::Error::KeyNotFound();
+      return iterator->second.value;
   }
 
   /// Attempts to return an iterator to the given key in the cache.
@@ -425,9 +427,7 @@ class Cache {
     return _map.find(key);
   }
 
-  virtual Value& operator[](const Key& key) {
-    return lookup(key);
-  }
+  Value &operator[](const Key &key) { return lookup(key); }
 
   const Value& operator[](const Key& key) const {
     return lookup(key);
@@ -513,9 +513,7 @@ class Cache {
   /// element-wise insertion via `insert()`.
   /// \returns The number of elements newly inserted (as opposed to only
   /// updated).
-  virtual size_t insert(InitializerList list) {
-    return insert(list.begin(), list.end());
-  }
+  size_t insert(InitializerList list) { return insert(list.begin(), list.end()); }
 
   /// Emplaces a new `(key, value)` pair into the cache.
   ///
@@ -609,21 +607,23 @@ class Cache {
   /// Erases the key pointed to by the given iterator.
   /// \param iterator The iterator whose key to erase.
   /// \throws LRU::Error::InvalidIterator if the iterator is the end iterator.
-  virtual void erase(MapConstIterator iterator) {
-    /// We have this overload to avoid the extra conversion-construction from
-    /// unordered to ordered iterator (and renewed hash lookup)
-    if (iterator == cend()) {
-      throw LRU::Error::InvalidIterator();
-    } else {
-      _erase(iterator);
-    }
+  void erase(MapConstIterator iterator)
+  {
+      /// We have this overload to avoid the extra conversion-construction from
+      /// unordered to ordered iterator (and renewed hash lookup)
+      if (iterator == cend()) {
+          throw LRU::Error::InvalidIterator();
+      } else {
+          _erase(iterator);
+      }
   }
 
   /// Clears the cache entirely.
-  virtual void clear() {
-    _map.clear();
-    _order.clear();
-    _last_accessed.invalidate();
+  void clear()
+  {
+      _map.clear();
+      _order.clear();
+      _last_accessed.invalidate();
   }
 
   /// Requests shrinkage of the cache to the given size.
@@ -634,16 +634,18 @@ class Cache {
   /// recent element.
   ///
   /// \param new_size The size to (maybe) shrink to.
-  virtual void shrink(size_t new_size) {
-    if (new_size >= size()) return;
-    if (new_size == 0) {
-      clear();
-      return;
-    }
+  void shrink(size_t new_size)
+  {
+      if (new_size >= size())
+          return;
+      if (new_size == 0) {
+          clear();
+          return;
+      }
 
-    while (size() > new_size) {
-      _erase_lru();
-    }
+      while (size() > new_size) {
+          _erase_lru();
+      }
   }
 
   /// \returns The most-recently inserted element.
@@ -671,9 +673,7 @@ class Cache {
   // SIZE AND CAPACITY INTERFACE
   /////////////////////////////////////////////////////////////////////////////
   /// \returns The number of keys present in the cache.
-  virtual size_t size() const noexcept {
-    return _map.size();
-  }
+  size_t size() const noexcept { return _map.size(); }
 
   /// Sets the capacity of the cache to the given value.
   ///
@@ -682,43 +682,32 @@ class Cache {
   /// capacity is equal to the given value.
   ///
   /// \param new_capacity The capacity to shrink or grow to.
-  virtual void capacity(size_t new_capacity) {
-    // Pop the front of the cache if we have to resize
-    while (size() > new_capacity) {
-      _erase_lru();
-    }
-    _capacity = new_capacity;
+  void capacity(size_t new_capacity)
+  {
+      // Pop the front of the cache if we have to resize
+      while (size() > new_capacity) {
+          _erase_lru();
+      }
+      _capacity = new_capacity;
   }
 
   /// Returns the current capacity of the cache.
-  virtual size_t capacity() const noexcept {
-    return _capacity;
-  }
+  size_t capacity() const noexcept { return _capacity; }
 
   /// \returns the number of slots left in the cache.
-  virtual size_t space_left() const noexcept {
-    return _capacity - size();
-  }
+  size_t space_left() const noexcept { return _capacity - size(); }
 
   /// \returns True if the cache contains no elements, else false.
-  virtual bool is_empty() const noexcept {
-    return size() == 0;
-  }
+  bool is_empty() const noexcept { return size() == 0; }
 
   /// \returns True if the cache's size equals its capacity, else false.
-  virtual bool is_full() const noexcept {
-    return size() == _capacity;
-  }
+  bool is_full() const noexcept { return size() == _capacity; }
 
   /// \returns The function used to hash keys.
-  virtual HashFunction hash_function() const {
-    return _map.hash_function();
-  }
+  HashFunction hash_function() const { return _map.hash_function(); }
 
   /// \returns The function used to compare keys.
-  virtual KeyEqual key_equal() const {
-    return _map.key_eq();
-  }
+  KeyEqual key_equal() const { return _map.key_eq(); }
 
   /////////////////////////////////////////////////////////////////////////////
   // STATISTICS INTERFACE
@@ -732,15 +721,11 @@ class Cache {
   /// Ownership of the statistics object remains with the user and __not__ with
   /// the cache object. Also, behavior is undefined if the lifetime of the cache
   /// exceeds that of the registered statistics object.
-  virtual void monitor(const StatisticsPointer& statistics) {
-    _stats = statistics;
-  }
+  void monitor(const StatisticsPointer &statistics) { _stats = statistics; }
 
   /// Registers the given statistics object for monitoring.
   /// Ownership of the statistics object is transferred to the cache.
-  virtual void monitor(StatisticsPointer&& statistics) {
-    _stats = std::move(statistics);
-  }
+  void monitor(StatisticsPointer &&statistics) { _stats = std::move(statistics); }
 
   /// Constructs a new statistics in-place in the cache.
   template <typename... Args,
@@ -752,9 +737,7 @@ class Cache {
 
   /// Stops any monitoring being performed with a statistics object.
   /// If the cache is not currently monitoring at all, this is a no-op.
-  virtual void stop_monitoring() {
-    _stats.reset();
-  }
+  void stop_monitoring() { _stats.reset(); }
 
   /// \returns True if the cache is currently monitoring statistics, else
   /// false.
@@ -765,32 +748,30 @@ class Cache {
   /// \returns The statistics object currently in use by the cache.
   /// \throws LRU::Error::NotMonitoring if the cache is currently not
   /// monitoring.
-  virtual Statistics<Key>& stats() {
-    if (!is_monitoring()) {
-      throw LRU::Error::NotMonitoring();
-    }
-    return _stats.get();
+  Statistics<Key> &stats()
+  {
+      if (!is_monitoring()) {
+          throw LRU::Error::NotMonitoring();
+      }
+      return _stats.get();
   }
 
   /// \returns The statistics object currently in use by the cache.
   /// \throws LRU::Error::NotMonitoring if the cache is currently not
   /// monitoring.
-  virtual const Statistics<Key>& stats() const {
-    if (!is_monitoring()) {
-      throw LRU::Error::NotMonitoring();
-    }
-    return _stats.get();
+  const Statistics<Key> &stats() const
+  {
+      if (!is_monitoring()) {
+          throw LRU::Error::NotMonitoring();
+      }
+      return _stats.get();
   }
 
   /// \returns A `shared_ptr` to the statistics currently in use by the cache.
-  virtual StatisticsPointer& shared_stats() {
-    return _stats.shared();
-  }
+  StatisticsPointer &shared_stats() { return _stats.shared(); }
 
   /// \returns A `shared_ptr` to the statistics currently in use by the cache.
-  virtual const StatisticsPointer& shared_stats() const {
-    return _stats.shared();
-  }
+  const StatisticsPointer &shared_stats() const { return _stats.shared(); }
 
   /////////////////////////////////////////////////////////////////////////////
   // CALLBACK INTERFACE
@@ -848,28 +829,29 @@ class Cache {
       typename Internal::LastAccessed<Key, Information, KeyEqual>;
   /// Moves the key pointed to by the iterator to the front of the order.
   /// \param iterator The iterator pointing to the key to move.
-  virtual void _move_to_front(QueueIterator iterator) const {
-    if (size() == 1) return;
-    // Extract the current linked-list node and insert (splice it) at the end
-    // The original iterator is not invalidated and now points to the new
-    // position (which is still the same node).
-    _order.splice(_order.end(), _order, iterator);
+  void _move_to_front(QueueIterator iterator) const
+  {
+      if (size() == 1)
+          return;
+      // Extract the current linked-list node and insert (splice it) at the end
+      // The original iterator is not invalidated and now points to the new
+      // position (which is still the same node).
+      _order.splice(_order.end(), _order, iterator);
   }
 
   /// Moves the key pointed to by the iterator to the front of the order and
   /// assigns a new value.
-  virtual void _move_to_front(MapIterator iterator, const Value& new_value) {
-    // Extract the current linked-list node and insert (splice it) at the end
-    // The original iterator is not invalidated and now points to the new
-    // position (which is still the same node).
-    _move_to_front(iterator->second.order);
-    iterator->second.value = new_value;
+  void _move_to_front(MapIterator iterator, const Value &new_value)
+  {
+      // Extract the current linked-list node and insert (splice it) at the end
+      // The original iterator is not invalidated and now points to the new
+      // position (which is still the same node).
+      _move_to_front(iterator->second.order);
+      iterator->second.value = new_value;
   }
 
   /// Erases the element most recently inserted into the cache.
-  virtual void _erase_lru() {
-    _erase(_map.find(_order.front()));
-  }
+  void _erase_lru() { _erase(_map.find(_order.front())); }
 
   /// Erases the element pointed to by the iterator.
   void _erase(MapConstIterator iterator) {
@@ -898,29 +880,32 @@ class Cache {
   }
 
   /// Convenience methhod to get the value for an insertion result into a map.
-  virtual Value& _value_from_result(MapInsertionResult& result) noexcept {
-    // `result.first` is the map iterator (to a pair), whose `second` member
-    // is
-    // the information object, whose `value` member is the value stored.
-    return result.first->second.value;
+  Value &_value_from_result(MapInsertionResult &result) noexcept
+  {
+      // `result.first` is the map iterator (to a pair), whose `second` member
+      // is
+      // the information object, whose `value` member is the value stored.
+      return result.first->second.value;
   }
 
   /// Registers a hit for the key and performs appropriate actions.
-  virtual void _register_hit(const Key& key, const Value& value) const {
-    if (is_monitoring()) {
-      _stats.register_hit(key);
-    }
+  void _register_hit(const Key &key, const Value &value) const
+  {
+      if (is_monitoring()) {
+          _stats.register_hit(key);
+      }
 
-    _callback_manager.hit(key, value);
+      _callback_manager.hit(key, value);
   }
 
   /// Registers a miss for the key and performs appropriate actions.
-  virtual void _register_miss(const Key& key) const {
-    if (is_monitoring()) {
-      _stats.register_miss(key);
-    }
+  void _register_miss(const Key &key) const
+  {
+      if (is_monitoring()) {
+          _stats.register_miss(key);
+      }
 
-    _callback_manager.miss(key);
+      _callback_manager.miss(key);
   }
 
   /// The common part of both range assignment operators.
